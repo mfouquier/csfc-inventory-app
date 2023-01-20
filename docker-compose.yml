@@ -1,0 +1,72 @@
+version: '3'
+
+volumes:
+  pgdatasource:
+  pgadmin-data:
+
+services:
+  inventory-db:
+    image: postgres
+    restart: always
+    environment: 
+     - DATABASE_HOST=127.0.0.1
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=docker
+     - POSTGRES_PORT=5432
+     - POSTGRES_DB=csfc_inventory
+    ports:
+     - '5432:5432'
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+    volumes:
+      - pgdatasource:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: mfouquier1@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: docker
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8086:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - inventory-db
+
+
+  inventory-api:
+    build: api/
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+    ports:
+      - '8080:8082'
+    environment: 
+      - NODE_ENV=development
+      - DATABASE_HOST=inventory-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=csfc_inventory
+    volumes:
+      - type: bind
+        source: ./api
+        target: /app
+    command: npm run start:dev
+
+  inventory-ui:
+    build: ui/
+    depends_on:
+      - 'inventory-api'
+    ports:
+      - '3001:3000'
+    volumes:
+      - type: bind
+        source: ./ui/src
+        target: /app/src
