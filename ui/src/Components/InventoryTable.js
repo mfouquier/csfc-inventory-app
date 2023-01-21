@@ -1,6 +1,5 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -13,13 +12,15 @@ import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import Fab from '@mui/material/Fab';
+import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import { FormGroup, Modal } from '@mui/material';
+import InputLabel from '@mui/material/InputLabel';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import FormControl from '@mui/material/FormControl';
 import { visuallyHidden } from '@mui/utils';
 
 
@@ -105,7 +106,7 @@ const headCells = [
 ];
 
 function EnhancedTableHead(props) {
-  const { onSelectAllClick, order, orderBy, numSelected, rowCount, onRequestSort } =
+  const { order, orderBy, onRequestSort } =
     props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -145,42 +146,12 @@ function EnhancedTableHead(props) {
 }
 
 EnhancedTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
   onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.oneOf(['asc', 'desc']).isRequired,
   orderBy: PropTypes.string.isRequired,
   rowCount: PropTypes.number.isRequired,
 };
 
-function EnhancedTableToolbar(props) {
-  const { numSelected } = props;
-
-  return (
-    <Toolbar
-      sx={{
-        pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
-        bgcolor: 'slategray'
-        // ...(numSelected > 0 && {
-        //   bgcolor: (theme) =>
-        //     alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
-        // }),
-      }}
-    >
-      <Typography
-        sx={{
-          color: 'white',
-          fontSize: 30,
-          justifyContent: 'center'
-        }}>CSfC Kits</Typography>
-    </Toolbar >
-  );
-}
-
-// EnhancedTableToolbar.propTypes = {
-//   numSelected: PropTypes.number.isRequired,
-// };
 
 export default function InventoryTable(inventory) {
   const [order, setOrder] = React.useState('asc');
@@ -188,6 +159,7 @@ export default function InventoryTable(inventory) {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   console.log("Inventory: ", inventory.data)
@@ -199,35 +171,6 @@ export default function InventoryTable(inventory) {
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
-
-  // const handleSelectAllClick = (event) => {
-  //   if (event.target.checked) {
-  //     const newSelected = rows.map((n) => n.name);
-  //     setSelected(newSelected);
-  //     return;
-  //   }
-  //   setSelected([]);
-  // };
-
-  // const handleClick = (event, name) => {
-  //   const selectedIndex = selected.indexOf(name);
-  //   let newSelected = [];
-
-  //   if (selectedIndex === -1) {
-  //     newSelected = newSelected.concat(selected, name);
-  //   } else if (selectedIndex === 0) {
-  //     newSelected = newSelected.concat(selected.slice(1));
-  //   } else if (selectedIndex === selected.length - 1) {
-  //     newSelected = newSelected.concat(selected.slice(0, -1));
-  //   } else if (selectedIndex > 0) {
-  //     newSelected = newSelected.concat(
-  //       selected.slice(0, selectedIndex),
-  //       selected.slice(selectedIndex + 1),
-  //     );
-  //   }
-
-  //   setSelected(newSelected);
-  // };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -242,85 +185,294 @@ export default function InventoryTable(inventory) {
     setDense(event.target.checked);
   };
 
-
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length} />
-        <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="tableTitle"
-            size={dense ? 'small' : 'medium'}
-          >
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              //onSelectAllClick={handleSelectAllClick}
-              onRequestSort={handleRequestSort}
-              rowCount={rows.length}
-            />
-            <TableBody>
-              {stableSort(inventory.data, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  //const isItemSelected = isSelected(row.name);
-                  //const labelId = `enhanced-table-checkbox-${index}`;
+    <>
+      <Toolbar
+        sx={{
+          pl: { sm: 2 },
+          pr: { xs: 1, sm: 1 },
+          bgcolor: 'slategray'
+        }}
+      >
+        <Typography
+          sx={{
+            color: 'white',
+            fontSize: 30,
+            justifyContent: 'center'
+          }}>CSfC Kits</Typography>
 
-                  return (
-                    <TableRow
-                      hover
-                      //onClick={(event) => handleClick(event, row.name)}
-                      role="checkbox"
-                      //aria-checked={isItemSelected}
-                      tabIndex={-1}
-                      key={row.id}
-                    //selected={isItemSelected}
-                    >
-                      <TableCell padding="checkbox"></TableCell>
-                      <TableCell align="left">{row.first_name}</TableCell>
-                      <TableCell align="left">{row.last_name}</TableCell>
-                      <TableCell align="left">{row.directorate}</TableCell>
-                      <TableCell align="left">{row.position}</TableCell>
-                      <TableCell align="left">{row.laptop_name}</TableCell>
-                      <TableCell align="left">{row.laptop_sn}</TableCell>
-                      <TableCell align="left">{row.router_sn}</TableCell>
-                      <TableCell align="left">{row.boi === true ? 'Yes' : 'No'}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow
-                  style={{
-                    height: (dense ? 33 : 53) * emptyRows,
-                  }}
-                >
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+        <Fab
+          sx={{ marginLeft: 2 }}
+          size="small"
+          color="green"
+          aria-label="add"
+          onClick={handleOpen}>
+          <AddIcon />
+        </Fab>
+      </Toolbar >
+      <Box sx={{ width: '100%' }}>
+        <Paper sx={{ width: '100%', mb: 2 }}>
+          <TableContainer>
+            <Table
+              sx={{ minWidth: 750 }}
+              aria-labelledby="tableTitle"
+              size={dense ? 'small' : 'medium'}
+            >
+              <EnhancedTableHead
+                numSelected={selected.length}
+                order={order}
+                orderBy={orderBy}
+                //onSelectAllClick={handleSelectAllClick}
+                onRequestSort={handleRequestSort}
+                rowCount={rows.length}
+              />
+              <TableBody>
+                {stableSort(inventory.data, getComparator(order, orderBy))
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => {
+                    return (
+                      <TableRow
+                        hover
+                        //onClick={(event) => handleClick(event, row.name)}
+                        role="checkbox"
+                        tabIndex={-1}
+                        key={row.id}
+                      >
+                        <TableCell padding="checkbox"></TableCell>
+                        <TableCell align="left">{row.first_name}</TableCell>
+                        <TableCell align="left">{row.last_name}</TableCell>
+                        <TableCell align="left">{row.directorate}</TableCell>
+                        <TableCell align="left">{row.position}</TableCell>
+                        <TableCell align="left">{row.laptop_name}</TableCell>
+                        <TableCell align="left">{row.laptop_sn}</TableCell>
+                        <TableCell align="left">{row.router_sn}</TableCell>
+                        <TableCell align="left">{row.boi === true ? 'Yes' : 'No'}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                {emptyRows > 0 && (
+                  <TableRow
+                    style={{
+                      height: (dense ? 33 : 53) * emptyRows,
+                    }}
+                  >
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+        <FormControlLabel
+          control={<Switch checked={dense} onChange={handleChangeDense} />}
+          label="Dense padding"
         />
-      </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
-    </Box>
+      </Box>
+
+
+      {/************************** START MODAL  ********************/}
+      <div>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+        >
+
+          <Box
+            component="form"
+            autoComplete='on'
+            sx={{
+              position: "absolute",
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '75%',
+              bgcolor: 'background.paper',
+              border: '2px solid #000',
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <FormGroup sx={{ display: "flex", margin: 2 }}>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">First Name</InputLabel>
+                <OutlinedInput
+                  id="component-outlined"
+                  label="first_name"
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
+                <OutlinedInput
+                  id="component-outlined"
+                  label="last_name"
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
+                <OutlinedInput
+                  id="component-outlined"
+                  label="directorate"
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Position</InputLabel>
+                <OutlinedInput
+                  id="component-outlined"
+                  label="position"
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
+                <OutlinedInput
+                  id="component-outlined"
+                  label="laptop_name"
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
+                <OutlinedInput
+                  id="component-outlined"
+                  label="laptop_sn"
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
+                <OutlinedInput
+                  id="component-outlined"
+                  label="router_sn"
+                />
+              </FormControl>
+
+            </FormGroup>
+
+
+            {/* <Form noValidate validated={validated}>
+              <Row className="mb-3">
+                <Form.Group as={Col} md="4">
+                  <Form.Label>Last Name</Form.Label>
+                  <Form.Control
+                    id="last_name"
+                    onChange={(e) => handleFormData(e)}
+                    value={formData.last_name}
+                    required
+                    type="text"
+                    placeholder="Last Name"
+                  />
+                </Form.Group>
+
+                <Form.Group as={Col} md="4">
+                  <Form.Label>First Name</Form.Label>
+                  <Form.Control
+                    id="first_name"
+                    onChange={(e) => handleFormData(e)}
+                    value={formData.first_name}
+                    required
+                    type="text"
+                    placeholder="First Name"
+                  />
+                </Form.Group>
+
+                <Form.Group as={Col} md="3">
+                  <Form.Label>Account Number</Form.Label>
+                  <InputGroup hasValidation>
+                    <Form.Control
+                      id="account_number"
+                      onChange={(e) => handleFormData(e)}
+                      value={formData.account_number}
+                      className="accountNumber"
+                      type="text"
+                      placeholder="#"
+                      required
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      Enter a valid email address.
+                    </Form.Control.Feedback>
+                  </InputGroup>
+                </Form.Group>
+              </Row>
+              <Row className="mb-3">
+                <Form.Group as={Col} md="4">
+                  <Form.Label>Phone Number</Form.Label>
+                  <Form.Control
+                    id="phone_number"
+                    onChange={(e) => handleFormData(e)}
+                    value={formData.phone_number}
+                    className="phoneNumber"
+                    type="text"
+                    placeholder="(123) 456- 7890"
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Enter an Phone Number.
+                  </Form.Control.Feedback>
+                </Form.Group>
+
+                <Form.Group as={Col} md="3">
+                  <Form.Label>Unit</Form.Label>
+                  <Form.Select
+                    id="unit_id"
+                    onChange={(e) => handleFormData(e)}
+                    value={formData.unit_id}
+                    aria-label="Default select example"
+                  >
+                    <option>Select</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    Please provide a Unit
+                  </Form.Control.Feedback>
+                </Form.Group>
+
+                <Form.Group as={Col} md="5">
+                  <Form.Label>Email Address</Form.Label>
+                  <Form.Control
+                    id="email"
+                    onChange={(e) => handleFormData(e)}
+                    value={formData.email}
+                    type="email"
+                    placeholder="email@address"
+                    required
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Enter a valid email address.
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Row>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="danger" onClick={() => handleClose()}>
+              Cancel
+            </Button>
+            <Button variant="success" onClick={(e) => handleSubmit(e)}>
+              Submit
+            </Button> */}
+            {/* </Modal.Footer> */}
+          </Box>
+        </Modal>
+
+      </div>
+    </>
   );
 }

@@ -5,6 +5,8 @@ import InventoryTable from './InventoryTable';
 import BarChart from './BarChart';
 import styled from 'styled-components';
 import Navbar from './Navbar';
+import AddKit from './AddKit';
+
 
 const HomePage = styled.div`
   display: flex;
@@ -30,7 +32,6 @@ const Inventory = () => {
                 <BarChart data={inventoryData} />
                 <DoughnutChart data={inventoryData} />
             </HomePage>
-
             <InventoryTable data={inventoryData} />
         </>
     )
