@@ -1,7 +1,16 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import DoughnutChart from './DoughnutChart';
 import InventoryTable from './InventoryTable';
+import BarChart from './BarChart';
+import styled from 'styled-components';
+import Navbar from './Navbar';
+
+const HomePage = styled.div`
+  display: flex;
+  flex-direction: wrap;
+  justify-content: center;
+`
 
 const Inventory = () => {
     const [inventoryData, setInventoryData] = useState([]);
@@ -16,8 +25,13 @@ const Inventory = () => {
     }, [])
     return (
         <>
-           <DoughnutChart data={inventoryData} />
-           <InventoryTable data={inventoryData} />
+            <Navbar />
+            <HomePage>
+                <BarChart data={inventoryData} />
+                <DoughnutChart data={inventoryData} />
+            </HomePage>
+
+            <InventoryTable data={inventoryData} />
         </>
     )
 }
