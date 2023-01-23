@@ -17,11 +17,14 @@ import Switch from '@mui/material/Switch';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FormGroup, Modal } from '@mui/material';
+import { Button, FormGroup, Modal } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import FormControl from '@mui/material/FormControl';
 import { visuallyHidden } from '@mui/utils';
+import { Stack } from '@mui/system';
+import axios from 'axios';
+
 
 
 function descendingComparator(a, b, orderBy) {
@@ -161,6 +164,7 @@ export default function InventoryTable(inventory) {
   const [dense, setDense] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [formData, setFormData] = React.useState({});
 
   console.log("Inventory: ", inventory.data)
 
@@ -187,6 +191,27 @@ export default function InventoryTable(inventory) {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const handleFormData = (event) => {
+    //TODO CHECK FOR VALID INPUTS
+    let newData = {...formData};
+    newData[event.target.id] = event.target.value;
+    setFormData(newData);
+  }
+
+  console.log("I AM FORM DATA ", formData)
+
+  const handleSubmit = (event) => {
+    //TODO CHECK FOR VALID INPUTS
+    let newData = {...formData};
+    newData[event.target.id] = event.target.value;
+    setFormData(newData);
+
+    axios.post("http://localhost:8080/inventory", formData).then((response) => {
+      console.log('Entry added successfully', response)
+    });
+  }
+
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -293,74 +318,102 @@ export default function InventoryTable(inventory) {
           onClose={handleClose}
           aria-labelledby="modal-modal-title"
         >
-
           <Box
             component="form"
             autoComplete='on'
+            spacing={2}
             sx={{
               position: "absolute",
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: '75%',
+              width: '50%',
               bgcolor: 'background.paper',
               border: '2px solid #000',
               boxShadow: 24,
               p: 4,
             }}
           >
-            <FormGroup sx={{ display: "flex", margin: 2 }}>
-              <FormControl>
-                <InputLabel htmlFor="component-outlined">First Name</InputLabel>
-                <OutlinedInput
-                  id="component-outlined"
-                  label="first_name"
-                />
-              </FormControl>
-              <FormControl>
-                <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
-                <OutlinedInput
-                  id="component-outlined"
-                  label="last_name"
-                />
-              </FormControl>
-              <FormControl>
-                <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
-                <OutlinedInput
-                  id="component-outlined"
-                  label="directorate"
-                />
-              </FormControl>
-              <FormControl>
-                <InputLabel htmlFor="component-outlined">Position</InputLabel>
-                <OutlinedInput
-                  id="component-outlined"
-                  label="position"
-                />
-              </FormControl>
-              <FormControl>
-                <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
-                <OutlinedInput
-                  id="component-outlined"
-                  label="laptop_name"
-                />
-              </FormControl>
-              <FormControl>
-                <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
-                <OutlinedInput
-                  id="component-outlined"
-                  label="laptop_sn"
-                />
-              </FormControl>
-              <FormControl>
-                <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
-                <OutlinedInput
-                  id="component-outlined"
-                  label="router_sn"
-                />
-              </FormControl>
+              <FormGroup row={true} sx={{display: 'flex', justifyContent: 'space-evenly', borderRadius: 2}}>
+                <FormControl>
+                  <InputLabel htmlFor="component-outlined">First Name</InputLabel>
+                  <OutlinedInput
+                    id="first_name"
+                    label="first_name"
+                    sx={{marginBottom:4}}
+                    value={formData.first_name}
+                    onChange={(e) => handleFormData(e)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
+                  <OutlinedInput
+                    id="last_name"
+                    label="last_name"
+                    value={formData.last_name}
+                    onChange={(e) => handleFormData(e)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
+                  <OutlinedInput
+                    id="directorate"
+                    label="directorate"
+                    value={formData.directorate}
+                    onChange={(e) => handleFormData(e)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <InputLabel htmlFor="component-outlined">Position</InputLabel>
+                  <OutlinedInput
+                    id="position"
+                    label="position"
+                    sx={{marginBottom:4}}
+                    value={formData.position}
+                    onChange={(e) => handleFormData(e)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
+                  <OutlinedInput
+                    id="laptop_name"
+                    label="laptop_name"
+                    value={formData.laptop_name}
+                    onChange={(e) => handleFormData(e)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
+                  <OutlinedInput
+                    id="laptop_sn"
+                    label="laptop_sn"
+                    value={formData.laptop_sn}
+                    onChange={(e) => handleFormData(e)}
+                  />
+                </FormControl>
+                <FormControl>
+                  <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
+                  <OutlinedInput
+                    id="router_sn"
+                    label="router_sn"
+                    value={formData.router_sn}
+                    onChange={(e) => handleFormData(e)}
+                  />
+                </FormControl>
 
-            </FormGroup>
+
+              </FormGroup>
+            <Stack
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: 4
+              }}
+              direction='row'
+              spacing={2}>
+              <Button variant='contained' color='success' margin={2} onClick={(e) => handleSubmit(e)}>Submit</Button>
+              <Button variant='contained' color='error'>Cancel</Button>
+            </Stack>
 
 
             {/* <Form noValidate validated={validated}>
