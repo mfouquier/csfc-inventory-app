@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
@@ -16,8 +16,9 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
+import FormLabel from '@mui/material/FormLabel';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, FormGroup, Modal } from '@mui/material';
+import { Button, FormGroup, MenuItem, Modal, Radio, RadioGroup, Select } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import FormControl from '@mui/material/FormControl';
@@ -177,12 +178,12 @@ export default function InventoryTable(inventory) {
 
   useEffect(() => {
     const getEditedData = async () => {
-        const response = await axios.get('http://localhost:8080/inventory');
-        const data = await response.data;
-        setEditedData(data);
+      const response = await axios.get('http://localhost:8080/inventory');
+      const data = await response.data;
+      setEditedData(data);
     }
     getEditedData();
-}, editShow)
+  }, editShow)
 
   const rows = inventory.data;
 
@@ -234,7 +235,7 @@ export default function InventoryTable(inventory) {
   const handleEditShow = (obj) => {
     setSelectedEdit(obj)
     setEditShow(true);
-    
+
   }
 
   const handleEditSubmit = async () => {
@@ -244,19 +245,23 @@ export default function InventoryTable(inventory) {
 
   const handleEditFormData = (event, value) => {
     console.log(event.target.value)
-    const newData = {...selectedEdit};
+    const newData = { ...selectedEdit };
     newData[event.target.id] = event.target.value
     setSelectedEdit(newData)
   }
 
-  console.log('Edited data ', selectedEdit)
-
   const handleFormData = (event) => {
     //TODO CHECK FOR VALID INPUTS
+
+    if (event.target.id === "") {
+      event.target.id = 'boi'
+    }
+
     let newData = { ...formData };
     newData[event.target.id] = event.target.value;
     setFormData(newData);
   }
+
 
   const handleSubmit = (event) => {
     //TODO CHECK FOR VALID INPUTS
@@ -325,7 +330,7 @@ export default function InventoryTable(inventory) {
                         tabIndex={-1}
                         key={row.id}
                       >
-                        <TableCell ><EditIcon onClick={() => handleEditShow(row)}/></TableCell>
+                        <TableCell ><EditIcon onClick={() => handleEditShow(row)} /></TableCell>
 
                         <TableCell align="left">{row.first_name}</TableCell>
                         <TableCell align="left">{row.last_name}</TableCell>
@@ -458,6 +463,20 @@ export default function InventoryTable(inventory) {
                 />
               </FormControl>
 
+              <FormControl >
+                <FormLabel >BOI</FormLabel>
+                <RadioGroup
+                  row
+                  id="boi"
+                  label="boi"
+
+                  onChange={(e) => handleFormData(e)}
+                >
+                  <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                  <FormControlLabel value='false' control={<Radio />} label="No" />
+                </RadioGroup>
+              </FormControl>
+
 
             </FormGroup>
             <Stack
@@ -495,22 +514,22 @@ export default function InventoryTable(inventory) {
           }}
         >
           <Typography >Are You Sure You Want to Delete?</Typography>
-           <Stack
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                marginTop: 4
-              }}
-              direction='row'
-              spacing={2}>
-              <Button variant='contained' color='success' margin={2} onClick={() => handleDelete(deleteItem)}>Confirm</Button>
-              <Button variant='contained' color='error' onClick={() => handleDeleteConfirmClose()}>Cancel</Button>
-            </Stack>
+          <Stack
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: 4
+            }}
+            direction='row'
+            spacing={2}>
+            <Button variant='contained' color='success' margin={2} onClick={() => handleDelete(deleteItem)}>Confirm</Button>
+            <Button variant='contained' color='error' onClick={() => handleDeleteConfirmClose()}>Cancel</Button>
+          </Stack>
         </Box>
       </Modal>
 
-  {/* ******************* EDIT DATA MODAL ************************** */}
-  <div>
+      {/* ******************* EDIT DATA MODAL ************************** */}
+      <div>
         <Modal
           open={editShow}
           onClose={handleEditClose}
