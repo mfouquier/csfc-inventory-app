@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import axios from 'axios';
+import { Autocomplete } from "@mui/material";
 
 
 const Search = styled('div')(({ theme }) => ({
@@ -51,6 +53,19 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function Navbar() {
+  const [searchData, setSearchData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState();
+
+  useEffect(() => {
+    const getSearchData = async () => {
+      const response = await axios.get(`http://localhost:8080/inventory`)
+      const data = await response.data;
+      setSearchData(data);
+    }
+    getSearchData();
+  }, [])
+
+  console.log('Search DATA: ', searchData)
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -64,7 +79,9 @@ export default function Navbar() {
           >
             CSfC Inventory Tracker
           </Typography>
-          <Search>
+          <Search
+
+            >
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>

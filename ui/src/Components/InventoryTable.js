@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
@@ -23,6 +23,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import FormControl from '@mui/material/FormControl';
 import { visuallyHidden } from '@mui/utils';
 import { Stack } from '@mui/system';
+import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 
 
@@ -143,6 +144,9 @@ function EnhancedTableHead(props) {
             </TableSortLabel>
           </TableCell>
         ))}
+        <TableCell sx={{ bgcolor: 'silver' }}>
+
+        </TableCell>
       </TableRow>
     </TableHead>
   );
@@ -165,8 +169,20 @@ export default function InventoryTable(inventory) {
   const [open, setOpen] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [formData, setFormData] = React.useState({});
+  const [deleteItem, setDeleteItem] = React.useState();
+  const [editShow, setEditShow] = React.useState(false);
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [selectedEdit, setSelectedEdit] = React.useState({});
+  const [editedData, setEditedData] = React.useState({});
 
-  console.log("Inventory: ", inventory.data)
+  useEffect(() => {
+    const getEditedData = async () => {
+        const response = await axios.get('http://localhost:8080/inventory');
+        const data = await response.data;
+        setEditedData(data);
+    }
+    getEditedData();
+}, editShow)
 
   const rows = inventory.data;
 
@@ -190,30 +206,70 @@ export default function InventoryTable(inventory) {
   };
 
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = () => {
+    setOpen(false)
+    setFormData({})
+  };
+
+  const handleDeleteConfirmClose = () => {
+    setDeleteItem();
+    setConfirmDelete(false);
+  }
+
+  const handleClickDelete = (id) => {
+    setDeleteItem(id);
+    setConfirmDelete(true);
+  }
+
+  const handleDelete = (deleteItem) => {
+    console.log(deleteItem)
+    axios.delete(`http://localhost:8080/inventory/${deleteItem}`);
+    setConfirmDelete(false);
+  }
+
+  const handleEditClose = () => {
+    setEditShow(false);
+  }
+
+  const handleEditShow = (obj) => {
+    setSelectedEdit(obj)
+    setEditShow(true);
+    
+  }
+
+  const handleEditSubmit = async () => {
+    await axios.patch(`http://localhost:8080/inventory/${selectedEdit.id}`, selectedEdit);
+    setEditShow(false);
+  }
+
+  const handleEditFormData = (event, value) => {
+    console.log(event.target.value)
+    const newData = {...selectedEdit};
+    newData[event.target.id] = event.target.value
+    setSelectedEdit(newData)
+  }
+
+  console.log('Edited data ', selectedEdit)
 
   const handleFormData = (event) => {
     //TODO CHECK FOR VALID INPUTS
-    let newData = {...formData};
+    let newData = { ...formData };
     newData[event.target.id] = event.target.value;
     setFormData(newData);
   }
 
-  console.log("I AM FORM DATA ", formData)
-
   const handleSubmit = (event) => {
     //TODO CHECK FOR VALID INPUTS
-    let newData = {...formData};
+    let newData = { ...formData };
     newData[event.target.id] = event.target.value;
     setFormData(newData);
 
     axios.post("http://localhost:8080/inventory", formData).then((response) => {
       console.log('Entry added successfully', response)
     });
+    setOpen(false);
   }
 
-
-  // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
@@ -221,8 +277,7 @@ export default function InventoryTable(inventory) {
     <>
       <Toolbar
         sx={{
-          pl: { sm: 2 },
-          pr: { xs: 1, sm: 1 },
+          width: '100%',
           bgcolor: 'slategray'
         }}
       >
@@ -270,7 +325,8 @@ export default function InventoryTable(inventory) {
                         tabIndex={-1}
                         key={row.id}
                       >
-                        <TableCell padding="checkbox"></TableCell>
+                        <TableCell ><EditIcon onClick={() => handleEditShow(row)}/></TableCell>
+
                         <TableCell align="left">{row.first_name}</TableCell>
                         <TableCell align="left">{row.last_name}</TableCell>
                         <TableCell align="left">{row.directorate}</TableCell>
@@ -279,6 +335,7 @@ export default function InventoryTable(inventory) {
                         <TableCell align="left">{row.laptop_sn}</TableCell>
                         <TableCell align="left">{row.router_sn}</TableCell>
                         <TableCell align="left">{row.boi === true ? 'Yes' : 'No'}</TableCell>
+                        <TableCell><DeleteIcon onClick={() => handleClickDelete(row.id)} /></TableCell>
                       </TableRow>
                     );
                   })}
@@ -311,7 +368,7 @@ export default function InventoryTable(inventory) {
       </Box>
 
 
-      {/************************** START MODAL  ********************/}
+      {/************************** START ADD KIT MODAL  ********************/}
       <div>
         <Modal
           open={open}
@@ -334,75 +391,75 @@ export default function InventoryTable(inventory) {
               p: 4,
             }}
           >
-              <FormGroup row={true} sx={{display: 'flex', justifyContent: 'space-evenly', borderRadius: 2}}>
-                <FormControl>
-                  <InputLabel htmlFor="component-outlined">First Name</InputLabel>
-                  <OutlinedInput
-                    id="first_name"
-                    label="first_name"
-                    sx={{marginBottom:4}}
-                    value={formData.first_name}
-                    onChange={(e) => handleFormData(e)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
-                  <OutlinedInput
-                    id="last_name"
-                    label="last_name"
-                    value={formData.last_name}
-                    onChange={(e) => handleFormData(e)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
-                  <OutlinedInput
-                    id="directorate"
-                    label="directorate"
-                    value={formData.directorate}
-                    onChange={(e) => handleFormData(e)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <InputLabel htmlFor="component-outlined">Position</InputLabel>
-                  <OutlinedInput
-                    id="position"
-                    label="position"
-                    sx={{marginBottom:4}}
-                    value={formData.position}
-                    onChange={(e) => handleFormData(e)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
-                  <OutlinedInput
-                    id="laptop_name"
-                    label="laptop_name"
-                    value={formData.laptop_name}
-                    onChange={(e) => handleFormData(e)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
-                  <OutlinedInput
-                    id="laptop_sn"
-                    label="laptop_sn"
-                    value={formData.laptop_sn}
-                    onChange={(e) => handleFormData(e)}
-                  />
-                </FormControl>
-                <FormControl>
-                  <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
-                  <OutlinedInput
-                    id="router_sn"
-                    label="router_sn"
-                    value={formData.router_sn}
-                    onChange={(e) => handleFormData(e)}
-                  />
-                </FormControl>
+            <FormGroup row={true} sx={{ display: 'flex', justifyContent: 'space-evenly', borderRadius: 2 }}>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">First Name</InputLabel>
+                <OutlinedInput
+                  id="first_name"
+                  label="first_name"
+                  sx={{ marginBottom: 4 }}
+                  value={formData.first_name}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
+                <OutlinedInput
+                  id="last_name"
+                  label="last_name"
+                  value={formData.last_name}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
+                <OutlinedInput
+                  id="directorate"
+                  label="directorate"
+                  value={formData.directorate}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Position</InputLabel>
+                <OutlinedInput
+                  id="position"
+                  label="position"
+                  sx={{ marginBottom: 4 }}
+                  value={formData.position}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
+                <OutlinedInput
+                  id="laptop_name"
+                  label="laptop_name"
+                  value={formData.laptop_name}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
+                <OutlinedInput
+                  id="laptop_sn"
+                  label="laptop_sn"
+                  value={formData.laptop_sn}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
+                <OutlinedInput
+                  id="router_sn"
+                  label="router_sn"
+                  value={formData.router_sn}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
 
 
-              </FormGroup>
+            </FormGroup>
             <Stack
               sx={{
                 display: 'flex',
@@ -412,120 +469,154 @@ export default function InventoryTable(inventory) {
               direction='row'
               spacing={2}>
               <Button variant='contained' color='success' margin={2} onClick={(e) => handleSubmit(e)}>Submit</Button>
-              <Button variant='contained' color='error'>Cancel</Button>
+              <Button variant='contained' color='error' onClick={() => handleClose()}>Cancel</Button>
             </Stack>
-
-
-            {/* <Form noValidate validated={validated}>
-              <Row className="mb-3">
-                <Form.Group as={Col} md="4">
-                  <Form.Label>Last Name</Form.Label>
-                  <Form.Control
-                    id="last_name"
-                    onChange={(e) => handleFormData(e)}
-                    value={formData.last_name}
-                    required
-                    type="text"
-                    placeholder="Last Name"
-                  />
-                </Form.Group>
-
-                <Form.Group as={Col} md="4">
-                  <Form.Label>First Name</Form.Label>
-                  <Form.Control
-                    id="first_name"
-                    onChange={(e) => handleFormData(e)}
-                    value={formData.first_name}
-                    required
-                    type="text"
-                    placeholder="First Name"
-                  />
-                </Form.Group>
-
-                <Form.Group as={Col} md="3">
-                  <Form.Label>Account Number</Form.Label>
-                  <InputGroup hasValidation>
-                    <Form.Control
-                      id="account_number"
-                      onChange={(e) => handleFormData(e)}
-                      value={formData.account_number}
-                      className="accountNumber"
-                      type="text"
-                      placeholder="#"
-                      required
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      Enter a valid email address.
-                    </Form.Control.Feedback>
-                  </InputGroup>
-                </Form.Group>
-              </Row>
-              <Row className="mb-3">
-                <Form.Group as={Col} md="4">
-                  <Form.Label>Phone Number</Form.Label>
-                  <Form.Control
-                    id="phone_number"
-                    onChange={(e) => handleFormData(e)}
-                    value={formData.phone_number}
-                    className="phoneNumber"
-                    type="text"
-                    placeholder="(123) 456- 7890"
-                    required
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    Enter an Phone Number.
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                <Form.Group as={Col} md="3">
-                  <Form.Label>Unit</Form.Label>
-                  <Form.Select
-                    id="unit_id"
-                    onChange={(e) => handleFormData(e)}
-                    value={formData.unit_id}
-                    aria-label="Default select example"
-                  >
-                    <option>Select</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid">
-                    Please provide a Unit
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                <Form.Group as={Col} md="5">
-                  <Form.Label>Email Address</Form.Label>
-                  <Form.Control
-                    id="email"
-                    onChange={(e) => handleFormData(e)}
-                    value={formData.email}
-                    type="email"
-                    placeholder="email@address"
-                    required
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    Enter a valid email address.
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="danger" onClick={() => handleClose()}>
-              Cancel
-            </Button>
-            <Button variant="success" onClick={(e) => handleSubmit(e)}>
-              Submit
-            </Button> */}
-            {/* </Modal.Footer> */}
           </Box>
         </Modal>
-
       </div>
+
+      {/* *********** CONFIRM DELETE MODAL ******************** */}
+      <Modal
+        open={confirmDelete} onClose={handleDeleteConfirmClose}>
+        <Box
+          justifyContent='center'
+          textAlign='center'
+          spacing={2}
+          sx={{
+            position: "absolute",
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '50%',
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography >Are You Sure You Want to Delete?</Typography>
+           <Stack
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: 4
+              }}
+              direction='row'
+              spacing={2}>
+              <Button variant='contained' color='success' margin={2} onClick={() => handleDelete(deleteItem)}>Confirm</Button>
+              <Button variant='contained' color='error' onClick={() => handleDeleteConfirmClose()}>Cancel</Button>
+            </Stack>
+        </Box>
+      </Modal>
+
+  {/* ******************* EDIT DATA MODAL ************************** */}
+  <div>
+        <Modal
+          open={editShow}
+          onClose={handleEditClose}
+          aria-labelledby="modal-modal-title"
+        >
+          <Box
+            component="form"
+            autoComplete='on'
+            spacing={2}
+            sx={{
+              position: "absolute",
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '50%',
+              bgcolor: 'background.paper',
+              border: '2px solid #000',
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <FormGroup row={true} sx={{ display: 'flex', justifyContent: 'space-evenly', borderRadius: 2 }}>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">First Name</InputLabel>
+                <OutlinedInput
+                  id="first_name"
+                  label="first_name"
+                  sx={{ marginBottom: 4 }}
+                  defaultValue={selectedEdit.first_name}
+                  onChange={(e) => handleEditFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
+                <OutlinedInput
+                  id="last_name"
+                  label="last_name"
+                  defaultValue={selectedEdit.last_name}
+                  onChange={(e) => handleEditFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
+                <OutlinedInput
+                  id="directorate"
+                  label="directorate"
+                  type='text'
+                  defaultValue={selectedEdit.directorate}
+                  onChange={(e) => handleEditFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Position</InputLabel>
+                <OutlinedInput
+                  id="position"
+                  label="position"
+                  sx={{ marginBottom: 4 }}
+                  defaultValue={selectedEdit.position}
+                  onChange={(e) => handleEditFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
+                <OutlinedInput
+                  id="laptop_name"
+                  label="laptop_name"
+                  defaultValue={selectedEdit.laptop_name}
+                  onChange={(e) => handleEditFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
+                <OutlinedInput
+                  id="laptop_sn"
+                  label="laptop_sn"
+                  defaultValue={selectedEdit.laptop_sn}
+                  onChange={(e) => handleEditFormData(e)}
+                />
+              </FormControl>
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
+                <OutlinedInput
+                  id="router_sn"
+                  label="router_sn"
+                  defaultValue={selectedEdit.router_sn}
+                  onChange={(e) => handleEditFormData(e)}
+                />
+              </FormControl>
+
+
+            </FormGroup>
+            <Stack
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: 4
+              }}
+              direction='row'
+              spacing={2}>
+              <Button variant='contained' color='success' margin={2} onClick={() => handleEditSubmit()}>Submit</Button>
+              <Button variant='contained' color='error' onClick={() => handleEditClose()}>Cancel</Button>
+            </Stack>
+          </Box>
+        </Modal>
+      </div>
+
     </>
   );
 }
