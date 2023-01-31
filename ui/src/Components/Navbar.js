@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -8,8 +9,11 @@ import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import Button from "@mui/material/Button";
 import axios from 'axios';
-import { Autocomplete } from "@mui/material";
+import SearchResults from "./SearchResults";
+import { Autocomplete, TextField } from "@mui/material";
+import { color } from "@mui/system";
 
 
 const Search = styled('div')(({ theme }) => ({
@@ -55,6 +59,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function Navbar() {
   const [searchData, setSearchData] = useState([]);
   const [searchQuery, setSearchQuery] = useState();
+  const [matches, setMatches] = useState({})
+  let navigate = useNavigate()
 
   useEffect(() => {
     const getSearchData = async () => {
@@ -65,7 +71,29 @@ export default function Navbar() {
     getSearchData();
   }, [])
 
-  console.log('Search DATA: ', searchData)
+ 
+
+    const handleSearchSubmit = (e) => {
+      let searchText = e.target.value;
+
+      let searchMatches = searchData.filter(data => {
+        const regex = new RegExp(`^${searchText}`, 'gi');
+        return data.first_name.match(regex) || data.last_name.match(regex) || data.laptop_name.match(regex) ||
+          data.laptop_sn.match(regex) || data.router_sn.match(regex) || data.directorate.match(regex) ||
+          data.position.match(regex)
+      })
+      setMatches(searchMatches)
+    }
+
+    const navigateSearchResults = () => {
+      console.log('NAV MATCH ', matches)
+      navigate('/SearchResults', {state: matches})
+    }
+   
+
+
+
+  console.log('MATCHES: ', matches)
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -77,19 +105,27 @@ export default function Navbar() {
             component="div"
             sx={{ display: { xs: 'none', sm: 'block' }, fontSize: 30 }}
           >
-            CSfC Inventory Tracker
+            <Link to='/inventory' style={{ textDecoration: 'none', color: 'white' }}>
+              CSfC Inventory Tracker
+            </Link>
           </Typography>
-          <Search
 
-            >
+
+          <Search>
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
             <StyledInputBase
               placeholder="Search…"
               inputProps={{ 'aria-label': 'search' }}
+              value={searchQuery}
+              onChange={(e) => handleSearchSubmit(e)}
             />
           </Search>
+         
+            <Button variant="contained" style={{color: 'white'}} color='warning' onClick={() => {navigateSearchResults()}}> Submit </Button>
+         
+          
 
           <Box sx={{ flexGrow: 1 }} />
           <IconButton
