@@ -78,9 +78,16 @@ export default function Navbar() {
 
       let searchMatches = searchData.filter(data => {
         const regex = new RegExp(`^${searchText}`, 'gi');
-        return data.first_name.match(regex) || data.last_name.match(regex) || data.laptop_name.match(regex) ||
+
+        try {
+            return data.first_name.match(regex) || data.last_name.match(regex) || data.laptop_name.match(regex) ||
           data.laptop_sn.match(regex) || data.router_sn.match(regex) || data.directorate.match(regex) ||
           data.position.match(regex)
+        } catch (error) {
+          console.log(error)
+        }
+        
+      
       })
       setMatches(searchMatches)
     }
