@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const router = express.Router();
+const fileUpload = require('./file-upload')
+
 module.exports = router;
 
 app.use(express.json());
@@ -21,7 +23,16 @@ router.get("/", async (req, res) => {
     }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', fileUpload.single('hand_receipt'), async (req, res) => {
+    let filePath;
+    if(!req.file) {
+        filePath = 'No File Uploaded';
+    } else {
+        filePath = req.file.filename;
+    }
+
+    console.log(req.body)
+
     try {
         await knex('inventory_ledger').insert({
             'first_name': req.body.first_name,
@@ -31,6 +42,9 @@ router.post('/', async (req, res) => {
             'laptop_sn': req.body.laptop_sn,
             'laptop_name': req.body.laptop_name,
             'router_sn': req.body.router_sn,
+            'aruba_name': req.body.aruba_name,
+            'cert_exp': req.body.cert_exp,
+            'hand_receipt': filePath,
             'boi': req.body.boi
         })
 
@@ -53,8 +67,13 @@ router.delete('/:id', async (req, res) => {
     }
 })
 
-router.patch('/:id', async (req, res) => {
-    console.log(req.params.id, req.body)
+router.patch('/:id', fileUpload.single('hand_receipt'), async (req, res) => {
+    let filePath;
+    if(!req.file) {
+        filePath = 'No File Uploaded';
+    } else {
+        filePath = req.file.filename;
+    }
     try {
         let updatedObject = {
             'id': req.body.id,
@@ -64,7 +83,10 @@ router.patch('/:id', async (req, res) => {
             'position': req.body.position,
             'laptop_sn': req.body.laptop_sn,
             'laptop_name': req.body.laptop_name,
-            'router_sn': req.body.router_sn
+            'router_sn': req.body.router_sn,
+            'aruba_name': req.body.aruba_name,
+            'cert_exp': req.body.cert_exp,
+            'hand_receipt': filePath
         }
         let updatedEntry = await knex('inventory_ledger').where('id', req.params.id).update(updatedObject);
         res.status(200).send('Entry Updated!');

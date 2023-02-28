@@ -82,7 +82,7 @@ export default function Navbar() {
         try {
             return data.first_name.match(regex) || data.last_name.match(regex) || data.laptop_name.match(regex) ||
           data.laptop_sn.match(regex) || data.router_sn.match(regex) || data.directorate.match(regex) ||
-          data.position.match(regex)
+          data.position.match(regex) || data.aruba_name.match(regex) || data.cert_exp.match(regex)
         } catch (error) {
           console.log(error)
         }

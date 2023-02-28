@@ -102,6 +102,18 @@ const headCells = [
     label: 'Aruba S/N',
   },
   {
+    id: 'aruba_name',
+    numeric: false,
+    disablePadding: false,
+    label: 'Aruba Name',
+  },
+  {
+    id: 'cert_exp',
+    numeric: false,
+    disablePadding: false,
+    label: 'Cert Exp',
+  },
+  {
     id: 'boi',
     numeric: false,
     disablePadding: false,
@@ -166,15 +178,17 @@ export default function InventoryTable(inventory) {
   const [orderBy, setOrderBy] = React.useState('calories');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
+  const [dense, setDense] = React.useState(true);
   const [open, setOpen] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [formData, setFormData] = React.useState({});
   const [deleteItem, setDeleteItem] = React.useState();
   const [editShow, setEditShow] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [selectedEdit, setSelectedEdit] = React.useState({});
   const [editedData, setEditedData] = React.useState({});
+  const [file, setFile] = useState('');//Uploaded File
+  const [filename, setFilename] = useState('Choose File');//File name
 
   useEffect(() => {
     const getEditedData = async () => {
@@ -239,16 +253,32 @@ export default function InventoryTable(inventory) {
   }
 
   const handleEditSubmit = async () => {
-    await axios.patch(`http://localhost:8080/inventory/${selectedEdit.id}`, selectedEdit);
+    const newUserData = new FormData();
+    newUserData.append('first_name', selectedEdit.first_name);
+    newUserData.append('last_name', selectedEdit.last_name);
+    newUserData.append('directorate', selectedEdit.directorate);
+    newUserData.append('position', selectedEdit.position);
+    newUserData.append('laptop_name', selectedEdit.laptop_name);
+    newUserData.append('laptop_sn', selectedEdit.laptop_sn);
+    newUserData.append('router_sn', selectedEdit.router_sn);
+    newUserData.append('aruba_name', selectedEdit.aruba_name);
+    newUserData.append('cert_exp', selectedEdit.cert_exp);
+    newUserData.append('boi', selectedEdit.boi);
+    newUserData.append('hand_receipt', file)
+
+    console.log('Selected Edit', selectedEdit, 'New User Data', newUserData)
+
+    await axios.patch(`http://localhost:8080/inventory/${selectedEdit.id}`, newUserData);
     setEditShow(false);
   }
 
   const handleEditFormData = (event, value) => {
-    console.log(event.target.value)
     const newData = { ...selectedEdit };
     newData[event.target.id] = event.target.value
     setSelectedEdit(newData)
   }
+
+  console.log(selectedEdit)
 
   const handleFormData = (event) => {
     //TODO CHECK FOR VALID INPUTS
@@ -262,6 +292,11 @@ export default function InventoryTable(inventory) {
     setFormData(newData);
   }
 
+  const onChange = (e) => {
+    console.log(e.target)
+    setFile(e.target.files[0]);
+    setFilename(e.target.files[0].name);
+  }
 
   const handleSubmit = (event) => {
     //TODO CHECK FOR VALID INPUTS
@@ -269,7 +304,22 @@ export default function InventoryTable(inventory) {
     newData[event.target.id] = event.target.value;
     setFormData(newData);
 
-    axios.post("http://localhost:8080/inventory", formData).then((response) => {
+
+    const newUserData = new FormData();
+    newUserData.append('first_name', formData.first_name);
+    newUserData.append('last_name', formData.last_name);
+    newUserData.append('directorate', formData.directorate);
+    newUserData.append('position', formData.position);
+    newUserData.append('laptop_name', formData.laptop_name);
+    newUserData.append('laptop_sn', formData.laptop_sn);
+    newUserData.append('router_sn', formData.router_sn);
+    newUserData.append('aruba_name', formData.aruba_name);
+    newUserData.append('cert_exp', formData.cert_exp);
+    newUserData.append('boi', formData.boi);
+    newUserData.append('hand_receipt', file)
+   
+
+    axios.post("http://localhost:8080/inventory", newUserData).then((response) => {
       console.log('Entry added successfully', response)
     });
     setOpen(false);
@@ -339,6 +389,8 @@ export default function InventoryTable(inventory) {
                         <TableCell align="left">{row.laptop_name}</TableCell>
                         <TableCell align="left">{row.laptop_sn}</TableCell>
                         <TableCell align="left">{row.router_sn}</TableCell>
+                        <TableCell align='left'>{row.aruba_name}</TableCell>
+                        <TableCell align='left'>{row.cert_exp}</TableCell>
                         <TableCell align="left">{row.boi === true ? 'Yes' : 'No'}</TableCell>
                         <TableCell><DeleteIcon onClick={() => handleClickDelete(row.id)} /></TableCell>
                       </TableRow>
@@ -396,7 +448,7 @@ export default function InventoryTable(inventory) {
               p: 4,
             }}
           >
-            <FormGroup row={true} sx={{ display: 'flex', justifyContent: 'space-evenly', borderRadius: 2 }}>
+            <FormGroup row={true} sx={{ display: 'flex', justifyContent: 'space-evenly', borderRadius: 2}}>
               <FormControl>
                 <InputLabel htmlFor="component-outlined">First Name</InputLabel>
                 <OutlinedInput
@@ -407,6 +459,7 @@ export default function InventoryTable(inventory) {
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
+
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
                 <OutlinedInput
@@ -416,6 +469,7 @@ export default function InventoryTable(inventory) {
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
+
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
                 <OutlinedInput
@@ -425,6 +479,7 @@ export default function InventoryTable(inventory) {
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
+
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Position</InputLabel>
                 <OutlinedInput
@@ -435,6 +490,7 @@ export default function InventoryTable(inventory) {
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
+
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
                 <OutlinedInput
@@ -444,6 +500,7 @@ export default function InventoryTable(inventory) {
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
+
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
                 <OutlinedInput
@@ -453,6 +510,7 @@ export default function InventoryTable(inventory) {
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
+
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
                 <OutlinedInput
@@ -463,18 +521,44 @@ export default function InventoryTable(inventory) {
                 />
               </FormControl>
 
-              <FormControl >
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Aruba Name</InputLabel>
+                <OutlinedInput
+                  id="aruba_name"
+                  label="aruba_name"
+                  value={formData.aruba_name}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Cert Exp</InputLabel>
+                <OutlinedInput
+                  id="cert_exp"
+                  label="cert_exp"
+                  value={formData.cert_exp}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+
+              <FormControl sx={{ padding:'1rem' }}>
                 <FormLabel >BOI</FormLabel>
                 <RadioGroup
                   row
                   id="boi"
                   label="boi"
-
                   onChange={(e) => handleFormData(e)}
                 >
                   <FormControlLabel value={true} control={<Radio />} label="Yes" />
                   <FormControlLabel value='false' control={<Radio />} label="No" />
                 </RadioGroup>
+              </FormControl>
+             
+              <FormControl sx={{ padding: '3rem' }} onChange={onChange}>
+                   <Button variant='contained' component="label" height={0.5}>
+                  Upload Files
+                  <input hidden multiple type="file" />
+                </Button>
               </FormControl>
 
 
@@ -617,6 +701,47 @@ export default function InventoryTable(inventory) {
                   defaultValue={selectedEdit.router_sn}
                   onChange={(e) => handleEditFormData(e)}
                 />
+              </FormControl>
+
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Aruba Name</InputLabel>
+                <OutlinedInput
+                  id="aruba_name"
+                  label="aruba_name"
+                  defaultValue={selectedEdit.aruba_name}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+
+              <FormControl>
+                <InputLabel htmlFor="component-outlined">Cert Exp</InputLabel>
+                <OutlinedInput
+                  id="cert_exp"
+                  label="cert_exp"
+                  defaultValue={selectedEdit.cert_exp}
+                  onChange={(e) => handleFormData(e)}
+                />
+              </FormControl>
+
+              <FormControl sx={{ padding:'1rem' }}>
+                <FormLabel >BOI</FormLabel>
+                <RadioGroup
+                  row
+                  id="boi"
+                  label="boi"
+                  defaultValue={selectedEdit.boi}
+                  onChange={(e) => handleFormData(e)}
+                >
+                  <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                  <FormControlLabel value='false' control={<Radio />} label="No" />
+                </RadioGroup>
+              </FormControl>
+             
+              <FormControl sx={{ padding: '3rem' }} onChange={onChange}>
+                   <Button variant='contained' component="label" height={0.5}>
+                  Upload Files
+                  <input hidden multiple type="file" />
+                </Button>
               </FormControl>
 
 
