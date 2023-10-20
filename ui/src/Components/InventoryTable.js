@@ -26,9 +26,10 @@ import { visuallyHidden } from '@mui/utils';
 import { Stack } from '@mui/system';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
+import AppForm from './Directorates';
 
 
-
+//*********TABLE AND SORTING FUNCTIONS**************
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -45,7 +46,6 @@ function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-
 function stableSort(array, comparator) {
   const stabilizedThis = array.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
@@ -60,16 +60,16 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: 'first_name',
-    numeric: false,
-    disablePadding: true,
-    label: 'First Name',
-  },
-  {
     id: 'last_name',
     numeric: false,
     disablePadding: false,
     label: 'Last Name',
+  },
+  {
+    id: 'first_name',
+    numeric: false,
+    disablePadding: true,
+    label: 'First Name',
   },
   {
     id: 'directorate',
@@ -172,7 +172,7 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-
+//*********** INVENTORY TABLE DATA ****************/
 export default function InventoryTable(inventory) {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
@@ -190,6 +190,7 @@ export default function InventoryTable(inventory) {
   const [file, setFile] = useState('');//Uploaded File
   const [filename, setFilename] = useState('Choose File');//File name
 
+  //GET DATA FROM DB
   useEffect(() => {
     const getEditedData = async () => {
       const response = await axios.get('http://localhost:8080/inventory');
@@ -197,7 +198,7 @@ export default function InventoryTable(inventory) {
       setEditedData(data);
     }
     getEditedData();
-  }, editShow)
+  }, [editShow])
 
   const rows = inventory.data;
 
@@ -220,38 +221,39 @@ export default function InventoryTable(inventory) {
     setDense(event.target.checked);
   };
 
+  // HANDLE OPENING AND CLOSING OF MODAL
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false)
     setFormData({})
   };
 
+  // HANDLE CLOSING OF DELETE ALERT
   const handleDeleteConfirmClose = () => {
     setDeleteItem();
     setConfirmDelete(false);
   }
-
+  // HANDLE DELETING A ROW OBJECT
   const handleClickDelete = (id) => {
     setDeleteItem(id);
     setConfirmDelete(true);
   }
-
+  // DELETE FROM DB
   const handleDelete = (deleteItem) => {
-    console.log(deleteItem)
     axios.delete(`http://localhost:8080/inventory/${deleteItem}`);
     setConfirmDelete(false);
   }
-
+  // HANDLE CLOSING EDIT MODAL
   const handleEditClose = () => {
     setEditShow(false);
   }
-
+  // HANDLE OPENING EDIT MODAL AND POPULATE FORM WITH OBJECT DATA
   const handleEditShow = (obj) => {
     setSelectedEdit(obj)
     setEditShow(true);
 
   }
-
+  // SUBMIT EDITED OBJECT TO DATABASE
   const handleEditSubmit = async () => {
     const newUserData = new FormData();
     newUserData.append('first_name', selectedEdit.first_name);
@@ -266,22 +268,22 @@ export default function InventoryTable(inventory) {
     newUserData.append('boi', selectedEdit.boi);
     newUserData.append('hand_receipt', file)
 
+<<<<<<< HEAD
     console.log('Selected Edit', selectedEdit, 'New User Data', newUserData)
 
+=======
+>>>>>>> 11dd0fe (doughnut chart clickable)
     await axios.patch(`http://localhost:8080/inventory/${selectedEdit.id}`, newUserData);
     setEditShow(false);
   }
-
+  // MAKE CHANGES TO EDITED OBJECT AND SAVE TO OBJECT
   const handleEditFormData = (event, value) => {
     const newData = { ...selectedEdit };
     newData[event.target.id] = event.target.value
     setSelectedEdit(newData)
   }
-
-  console.log(selectedEdit)
-
+  // SAVE FORM DATA TO THE FORMDATA USESTATE OBJECT
   const handleFormData = (event) => {
-    //TODO CHECK FOR VALID INPUTS
 
     if (event.target.id === "") {
       event.target.id = 'boi'
@@ -291,20 +293,22 @@ export default function InventoryTable(inventory) {
     newData[event.target.id] = event.target.value;
     setFormData(newData);
   }
-
+  // UPLOAD FILE ONCHANGE FUNCTION
   const onChange = (e) => {
     console.log(e.target)
     setFile(e.target.files[0]);
     setFilename(e.target.files[0].name);
   }
 
+  // SUBMIT FORM DATA TO DATABASE
   const handleSubmit = (event) => {
-    //TODO CHECK FOR VALID INPUTS
+    const form = event.currentTarget;
+    console.log("validity", form.checkValidity());
+
     let newData = { ...formData };
     newData[event.target.id] = event.target.value;
     setFormData(newData);
-
-
+    
     const newUserData = new FormData();
     newUserData.append('first_name', formData.first_name);
     newUserData.append('last_name', formData.last_name);
@@ -382,8 +386,8 @@ export default function InventoryTable(inventory) {
                       >
                         <TableCell ><EditIcon onClick={() => handleEditShow(row)} /></TableCell>
 
-                        <TableCell align="left">{row.first_name}</TableCell>
                         <TableCell align="left">{row.last_name}</TableCell>
+                        <TableCell align="left">{row.first_name}</TableCell>
                         <TableCell align="left">{row.directorate}</TableCell>
                         <TableCell align="left">{row.position}</TableCell>
                         <TableCell align="left">{row.laptop_name}</TableCell>
@@ -448,105 +452,116 @@ export default function InventoryTable(inventory) {
               p: 4,
             }}
           >
+
             <FormGroup row={true} sx={{ display: 'flex', justifyContent: 'space-evenly', borderRadius: 2}}>
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">First Name</InputLabel>
                 <OutlinedInput
                   id="first_name"
                   label="first_name"
+                  type='text'
                   sx={{ marginBottom: 4 }}
                   value={formData.first_name}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Last Name</InputLabel>
                 <OutlinedInput
                   id="last_name"
                   label="last_name"
+                  type='text'
                   value={formData.last_name}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
                 <OutlinedInput
                   id="directorate"
                   label="directorate"
+                  type='text'
                   value={formData.directorate}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Position</InputLabel>
                 <OutlinedInput
                   id="position"
                   label="position"
+                  type='text'
                   sx={{ marginBottom: 4 }}
                   value={formData.position}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
-
-              <FormControl>
+ 
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Laptop Name</InputLabel>
                 <OutlinedInput
                   id="laptop_name"
                   label="laptop_name"
+                  type='text'
                   value={formData.laptop_name}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Laptop S/N</InputLabel>
                 <OutlinedInput
                   id="laptop_sn"
                   label="laptop_sn"
+                  type='text'
                   value={formData.laptop_sn}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Aruba S/N</InputLabel>
                 <OutlinedInput
                   id="router_sn"
                   label="router_sn"
+                  type='text'
                   value={formData.router_sn}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Aruba Name</InputLabel>
                 <OutlinedInput
                   id="aruba_name"
                   label="aruba_name"
+                  type='text'
                   value={formData.aruba_name}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl required>
                 <InputLabel htmlFor="component-outlined">Cert Exp</InputLabel>
                 <OutlinedInput
                   id="cert_exp"
                   label="cert_exp"
+                  type='number'
                   value={formData.cert_exp}
                   onChange={(e) => handleFormData(e)}
                 />
               </FormControl>
 
-              <FormControl sx={{ padding:'1rem' }}>
+              <FormControl sx={{ padding:'1rem' }} required>
                 <FormLabel >BOI</FormLabel>
                 <RadioGroup
                   row
                   id="boi"
                   label="boi"
+                  type='radio'
                   onChange={(e) => handleFormData(e)}
                 >
                   <FormControlLabel value={true} control={<Radio />} label="Yes" />
@@ -635,6 +650,7 @@ export default function InventoryTable(inventory) {
               p: 4,
             }}
           >
+            
             <FormGroup row={true} sx={{ display: 'flex', justifyContent: 'space-evenly', borderRadius: 2 }}>
               <FormControl>
                 <InputLabel htmlFor="component-outlined">First Name</InputLabel>
@@ -644,6 +660,7 @@ export default function InventoryTable(inventory) {
                   sx={{ marginBottom: 4 }}
                   defaultValue={selectedEdit.first_name}
                   onChange={(e) => handleEditFormData(e)}
+                  
                 />
               </FormControl>
               <FormControl>

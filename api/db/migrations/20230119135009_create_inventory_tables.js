@@ -12,7 +12,7 @@ exports.up = function(knex) {
         table.string("position", 50);
         table.string("laptop_sn", 25);
         table.string("laptop_name", 50);
-        table.integer("aruba_name");
+        table.string("aruba_name");
         table.integer("cert_exp");
         table.text('hand_receipt');
         table.string("router_sn", 25);

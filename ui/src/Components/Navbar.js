@@ -98,10 +98,6 @@ export default function Navbar() {
     }
    
 
-
-
-  console.log('MATCHES: ', matches)
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ bgcolor: 'slategray' }}>

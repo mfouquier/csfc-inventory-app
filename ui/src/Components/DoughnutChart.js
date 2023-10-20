@@ -18,6 +18,7 @@ justify-content: right;
 
 const DoughnutChart = () => {
   const [inventoryData, setInventoryData] = useState([]);
+  const navigate = useNavigate()
 
   let j1Count = 0;
   let j2Count = 0;
@@ -26,6 +27,8 @@ const DoughnutChart = () => {
   let j5Count = 0;
   let j6Count = 0;
   let j8Count = 0;
+  let cmdtCount = 0;
+  let cgCount = 0;
 
   useEffect(() => {
     const getInventoryData = async () => {
@@ -52,15 +55,19 @@ const DoughnutChart = () => {
       j6Count++
     } else if (obj.directorate === 'J8') {
       j8Count++
-    }
+    } else if (obj.directorate === 'CMDT') {
+      cmdtCount++
+    } else if (obj.directorate === 'CG') {
+      cgCount++
+    } 
   })
 
   const data = {
-    labels: ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J8'],
+    labels: ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J8', 'CMDT', 'CG'],
     datasets: [
       {
         label: 'Total Devices Signed Out',
-        data: [j1Count, j2Count, j3Count, j4Count, j5Count, j6Count, j8Count],
+        data: [j1Count, j2Count, j3Count, j4Count, j5Count, j6Count, j8Count, cmdtCount, cgCount],
         backgroundColor: [
           'rgba(255, 99, 132, 0.2)',
           'rgba(54, 162, 235, 0.2)',
@@ -68,7 +75,9 @@ const DoughnutChart = () => {
           'rgba(0, 255, 132, 0.2)',
           'rgba(54, 0, 235, 0.2)',
           'rgba(255, 69, 0, 0.2)',
-          'rgba(176, 196, 222, 0.2)'
+          'rgba(176, 196, 222, 0.2)',
+          'rgba(25, 220, 105, 0.2)',
+          'rgba(235, 15, 198, 0.2)'
         ],
         borderColor: [
           'rgba(255, 99, 132, 1)',
@@ -77,7 +86,9 @@ const DoughnutChart = () => {
           'rgba(0, 255, 132, 1)',
           'rgba(54, 0, 235, 1)',
           'rgba(255, 69, 0, 1)',
-          'rgba(176, 196, 222, 1)'
+          'rgba(176, 196, 222, 1)',
+          'rgba(25, 220, 105, 1)',
+          'rgba(235, 15, 198, 1)'
         ],
         hoverBackgroundColor: [
           'rgba(255,0,0,.5)',
@@ -86,7 +97,9 @@ const DoughnutChart = () => {
           'rgba(0, 255, 12, 0.5)',
           'rgba(5, 0, 235, 0.5)',
           'rgba(255, 69, 0, 0.5)',
-          'rgba(176, 196, 222, 0.5)'
+          'rgba(176, 196, 222, 0.5)',
+          'rgba(25, 220, 105, 0.5)',
+          'rgba(235, 15, 198, 0.5)'
         ],
         borderWidth: 1,
       },
@@ -99,11 +112,23 @@ const DoughnutChart = () => {
       <Doughnut options={{
         onClick: function (event, element) {
           if (element[0].index === 0) {
-            navigate({ pathname: '/device_type', search: '?device_type=Laptop' })
+            navigate({ pathname: '/Directorates', search: '?directorate=J1' })
           } else if (element[0].index === 1) {
-            navigate({ pathname: '/device_type', search: '?device_type=Cell Phone' })
+            navigate({ pathname: '/Directorates', search: '?directorate=J2' })
           } else if (element[0].index === 2) {
-            navigate({ pathname: '/device_type', search: '?device_type=Television' })
+            navigate({ pathname: '/Directorates', search: '?directorate=J3' })
+          } else if (element[0].index === 3) {
+            navigate({ pathname: '/Directorates', search: '?directorate=J4' })
+          } else if (element[0].index === 4) {
+            navigate({ pathname: '/Directorates', search: '?directorate=J5' })
+          } else if (element[0].index === 5) {
+            navigate({ pathname: '/Directorates', search: '?directorate=J6' })
+          } else if (element[0].index === 6) {
+            navigate({ pathname: '/Directorates', search: '?directorate=J8' })
+          } else if (element[0].index === 7) {
+            navigate({ pathname: '/Directorates', search: '?directorate=CMDT' })
+          } else if (element[0].index === 8) {
+            navigate({ pathname: '/Directorates', search: '?directorate=CG' })
           }
         }
       }} data={data} />
