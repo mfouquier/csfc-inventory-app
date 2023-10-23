@@ -268,11 +268,8 @@ export default function InventoryTable(inventory) {
     newUserData.append('boi', selectedEdit.boi);
     newUserData.append('hand_receipt', file)
 
-<<<<<<< HEAD
     console.log('Selected Edit', selectedEdit, 'New User Data', newUserData)
 
-=======
->>>>>>> 11dd0fe (doughnut chart clickable)
     await axios.patch(`http://localhost:8080/inventory/${selectedEdit.id}`, newUserData);
     setEditShow(false);
   }
