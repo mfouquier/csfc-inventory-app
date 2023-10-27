@@ -27,6 +27,7 @@ import { Stack } from '@mui/system';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import AppForm from './Directorates';
+import Pdf from '../static/2062_fillable.pdf';
 
 
 //*********TABLE AND SORTING FUNCTIONS**************
@@ -77,12 +78,12 @@ const headCells = [
     disablePadding: false,
     label: 'Directorate',
   },
-  {
-    id: 'position',
-    numeric: false,
-    disablePadding: false,
-    label: 'Position',
-  },
+  // {
+  //   id: 'position',
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: 'Position',
+  // },
   {
     id: 'laptop_name',
     numeric: false,
@@ -112,6 +113,12 @@ const headCells = [
     numeric: false,
     disablePadding: false,
     label: 'Cert Exp',
+  },
+  {
+    id: 'hand_receipt',
+    numeric: false,
+    disablePadding: false,
+    label: 'Hand Receipt'
   },
   {
     id: 'boi',
@@ -173,7 +180,7 @@ EnhancedTableHead.propTypes = {
 };
 
 //*********** INVENTORY TABLE DATA ****************/
-export default function InventoryTable(inventory) {
+export default function InventoryTable(inventory, change) {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
   const [selected, setSelected] = React.useState([]);
@@ -187,7 +194,7 @@ export default function InventoryTable(inventory) {
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [selectedEdit, setSelectedEdit] = React.useState({});
   const [editedData, setEditedData] = React.useState({});
-  const [file, setFile] = useState('');//Uploaded File
+  const [file, setFile] = useState("");//Uploaded File
   const [filename, setFilename] = useState('Choose File');//File name
 
   //GET DATA FROM DB
@@ -198,7 +205,7 @@ export default function InventoryTable(inventory) {
       setEditedData(data);
     }
     getEditedData();
-  }, [editShow])
+  }, [inventory])
 
   const rows = inventory.data;
 
@@ -232,20 +239,24 @@ export default function InventoryTable(inventory) {
   const handleDeleteConfirmClose = () => {
     setDeleteItem();
     setConfirmDelete(false);
+    inventory.change()
   }
   // HANDLE DELETING A ROW OBJECT
   const handleClickDelete = (id) => {
     setDeleteItem(id);
     setConfirmDelete(true);
+    inventory.change()
   }
   // DELETE FROM DB
   const handleDelete = (deleteItem) => {
     axios.delete(`http://localhost:8080/inventory/${deleteItem}`);
     setConfirmDelete(false);
+    inventory.change()
   }
   // HANDLE CLOSING EDIT MODAL
   const handleEditClose = () => {
     setEditShow(false);
+    inventory.change()
   }
   // HANDLE OPENING EDIT MODAL AND POPULATE FORM WITH OBJECT DATA
   const handleEditShow = (obj) => {
@@ -268,11 +279,13 @@ export default function InventoryTable(inventory) {
     newUserData.append('boi', selectedEdit.boi);
     newUserData.append('hand_receipt', file)
 
-    console.log('Selected Edit', selectedEdit, 'New User Data', newUserData)
+    console.log(newUserData)
 
     await axios.patch(`http://localhost:8080/inventory/${selectedEdit.id}`, newUserData);
     setEditShow(false);
+    inventory.change()
   }
+ 
   // MAKE CHANGES TO EDITED OBJECT AND SAVE TO OBJECT
   const handleEditFormData = (event, value) => {
     const newData = { ...selectedEdit };
@@ -292,7 +305,6 @@ export default function InventoryTable(inventory) {
   }
   // UPLOAD FILE ONCHANGE FUNCTION
   const onChange = (e) => {
-    console.log(e.target)
     setFile(e.target.files[0]);
     setFilename(e.target.files[0].name);
   }
@@ -324,6 +336,7 @@ export default function InventoryTable(inventory) {
       console.log('Entry added successfully', response)
     });
     setOpen(false);
+    inventory.change()
   }
 
   const emptyRows =
@@ -386,12 +399,13 @@ export default function InventoryTable(inventory) {
                         <TableCell align="left">{row.last_name}</TableCell>
                         <TableCell align="left">{row.first_name}</TableCell>
                         <TableCell align="left">{row.directorate}</TableCell>
-                        <TableCell align="left">{row.position}</TableCell>
+                        {/* <TableCell align="left">{row.position}</TableCell> */}
                         <TableCell align="left">{row.laptop_name}</TableCell>
                         <TableCell align="left">{row.laptop_sn}</TableCell>
                         <TableCell align="left">{row.router_sn}</TableCell>
                         <TableCell align='left'>{row.aruba_name}</TableCell>
                         <TableCell align='left'>{row.cert_exp}</TableCell>
+                        <TableCell align='left'>{row.hand_receipt === null ? "" : <a target='_blank' href={`http://localhost:8080/uploads/${row.hand_receipt}`}>2062</a>}</TableCell>
                         <TableCell align="left">{row.boi === true ? 'Yes' : 'No'}</TableCell>
                         <TableCell><DeleteIcon onClick={() => handleClickDelete(row.id)} /></TableCell>
                       </TableRow>
@@ -566,10 +580,10 @@ export default function InventoryTable(inventory) {
                 </RadioGroup>
               </FormControl>
              
-              <FormControl sx={{ padding: '3rem' }} onChange={onChange}>
+              <FormControl sx={{ padding: '3rem' }} onChange={(e) => onChange(e)}>
                    <Button variant='contained' component="label" height={0.5}>
                   Upload Files
-                  <input hidden multiple type="file" />
+                  <input hidden type="file" />
                 </Button>
               </FormControl>
 
@@ -723,7 +737,7 @@ export default function InventoryTable(inventory) {
                   id="aruba_name"
                   label="aruba_name"
                   defaultValue={selectedEdit.aruba_name}
-                  onChange={(e) => handleFormData(e)}
+                  onChange={(e) => handleEditFormData(e)}
                 />
               </FormControl>
 
@@ -733,7 +747,7 @@ export default function InventoryTable(inventory) {
                   id="cert_exp"
                   label="cert_exp"
                   defaultValue={selectedEdit.cert_exp}
-                  onChange={(e) => handleFormData(e)}
+                  onChange={(e) => handleEditFormData(e)}
                 />
               </FormControl>
 
@@ -744,7 +758,7 @@ export default function InventoryTable(inventory) {
                   id="boi"
                   label="boi"
                   defaultValue={selectedEdit.boi}
-                  onChange={(e) => handleFormData(e)}
+                  onChange={(e) => handleEditFormData(e)}
                 >
                   <FormControlLabel value={true} control={<Radio />} label="Yes" />
                   <FormControlLabel value='false' control={<Radio />} label="No" />

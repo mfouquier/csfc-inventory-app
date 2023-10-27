@@ -6,6 +6,7 @@ import BarChart from './BarChart';
 import styled from 'styled-components';
 import Navbar from './Navbar';
 import AddKit from './AddKit';
+import UserView from './UserView';
 
 
 const HomePage = styled.div`
@@ -16,6 +17,14 @@ const HomePage = styled.div`
 
 const Inventory = () => {
     const [inventoryData, setInventoryData] = useState([]);
+    const [isAdmin, setIsAdmin] = useState(true)
+    const [refresh, setRefresh] = useState(false)
+
+    const handleRefresh = () => {
+        setRefresh(!refresh)
+    }
+
+    console.log(refresh)
 
     useEffect(() => {
         const getInventoryData = async () => {
@@ -24,7 +33,7 @@ const Inventory = () => {
             setInventoryData(data);
         }
         getInventoryData();
-    }, [])
+    }, [refresh])
     return (
         <>
             <Navbar />
@@ -32,7 +41,9 @@ const Inventory = () => {
                 <BarChart data={inventoryData} />
                 <DoughnutChart data={inventoryData} />
             </HomePage>
-            <InventoryTable data={inventoryData} />
+            {isAdmin ? <InventoryTable isAdmin={!isAdmin} data={inventoryData} change={handleRefresh} />:<UserView isAdmin={isAdmin} data={inventoryData} />}
+            
+            
         </>
     )
 }

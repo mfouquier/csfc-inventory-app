@@ -31,8 +31,6 @@ router.post('/', fileUpload.single('hand_receipt'), async (req, res) => {
         filePath = req.file.filename;
     }
 
-    console.log(req.body)
-
     try {
         await knex('inventory_ledger').insert({
             'first_name': req.body.first_name,
@@ -69,6 +67,7 @@ router.delete('/:id', async (req, res) => {
 
 router.patch('/:id', fileUpload.single('hand_receipt'), async (req, res) => {
     let filePath;
+    console.log('REQ BODY', req.body)
     if(!req.file) {
         filePath = 'No File Uploaded';
     } else {
@@ -86,7 +85,8 @@ router.patch('/:id', fileUpload.single('hand_receipt'), async (req, res) => {
             'router_sn': req.body.router_sn,
             'aruba_name': req.body.aruba_name,
             'cert_exp': req.body.cert_exp,
-            'hand_receipt': filePath
+            'hand_receipt': filePath,
+            'boi': req.body.boi
         }
         let updatedEntry = await knex('inventory_ledger').where('id', req.params.id).update(updatedObject);
         res.status(200).send('Entry Updated!');
