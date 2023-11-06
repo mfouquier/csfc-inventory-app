@@ -5,6 +5,8 @@ import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import InventoryTable from "./InventoryTable";
 import Navbar from "./Navbar";
+import UserView from "./UserView";
+import UserContext from "./UserContext";
 
 const LayoutDiv = styled.div`
   padding: 2%;
@@ -12,12 +14,15 @@ const LayoutDiv = styled.div`
   justify-content: space-between;
 `;
 
-export default function Directorates() {
+export default function Directorates(props) {
   const [deviceCards, setDeviceCards] = useState([]);
   const location = useLocation();
+  const [refresh, setRefresh] = useState(false)
 
-  console.log(location.search);
-  const url = `http://localhost:8080/dir_query${location.search}`;
+  const { isAdmin } = useContext(UserContext);
+  const { handleIsAdmin } = useContext(UserContext);
+
+  const url = `http://localhost:8080/dir_query${location.state.search}`;
 
   useEffect(() => {
     async function getQueryResults() {
@@ -26,14 +31,15 @@ export default function Directorates() {
       setDeviceCards(data);
     }
     getQueryResults();
-  }, [url]);
+  }, [url, refresh]);
 
-  console.log(deviceCards);
-
+  const handleRefresh = () => {
+    setRefresh(!refresh)
+}
+  
   return (
     <>
-      <Navbar />
-      <InventoryTable data={deviceCards} />
+      {isAdmin ? <InventoryTable isAdmin={!isAdmin} data={deviceCards} change={handleRefresh} />:<UserView isAdmin={isAdmin} data={deviceCards} />}
     </>
   );
 }

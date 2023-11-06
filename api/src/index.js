@@ -17,9 +17,11 @@ const knex = require('knex')(config)
 
 const inventory_route = require('./crud/inventory')
 const dir_query = require('./crud/dir_query')
+const admins = require('./crud/admins')
 
 app.use('/inventory', inventory_route)
 app.use('/dir_query', dir_query)
+app.use('/admins', admins)
 
 app.listen(PORT, () => {
     console.log(`Inventory application listening on ${PORT}`);

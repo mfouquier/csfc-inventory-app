@@ -14,20 +14,9 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-import Fab from '@mui/material/Fab';
-import AddIcon from '@mui/icons-material/Add';
-import FormLabel from '@mui/material/FormLabel';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Button, FormGroup, MenuItem, Modal, Radio, RadioGroup, Select } from '@mui/material';
-import InputLabel from '@mui/material/InputLabel';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import FormControl from '@mui/material/FormControl';
 import { visuallyHidden } from '@mui/utils';
-import { Stack } from '@mui/system';
-import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
-import AppForm from './Directorates';
-import Pdf from '../static/2062_fillable.pdf';
+
 
 
 //*********TABLE AND SORTING FUNCTIONS**************
@@ -60,73 +49,73 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-  {
-    id: 'last_name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Last Name',
-  },
-  {
-    id: 'first_name',
-    numeric: false,
-    disablePadding: true,
-    label: 'First Name',
-  },
-  {
+   {
     id: 'directorate',
     numeric: false,
     disablePadding: false,
     label: 'Directorate',
   },
-  // {
-  //   id: 'position',
-  //   numeric: false,
-  //   disablePadding: false,
-  //   label: 'Position',
-  // },
   {
-    id: 'laptop_name',
+    id: 'position',
     numeric: false,
     disablePadding: false,
-    label: 'Laptop Name',
-  },
-  {
-    id: 'laptop_sn',
-    numeric: false,
-    disablePadding: false,
-    label: 'Laptop S/N',
-  },
-  {
-    id: 'router_sn',
-    numeric: false,
-    disablePadding: false,
-    label: 'Aruba S/N',
-  },
-  {
-    id: 'aruba_name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Aruba Name',
-  },
-  {
-    id: 'cert_exp',
-    numeric: false,
-    disablePadding: false,
-    label: 'Cert Exp',
-  },
-  {
-    id: 'hand_receipt',
-    numeric: false,
-    disablePadding: false,
-    label: 'Hand Receipt'
+    label: 'Position',
   },
   {
     id: 'boi',
     numeric: false,
     disablePadding: false,
     label: 'BOI'
+  },
+  {
+    id: 'last_name',
+    numeric: false,
+    disablePadding: false,
+    label: 'Name',
+  },
+  // {
+  //   id: 'first_name',
+  //   numeric: false,
+  //   disablePadding: true,
+  //   label: 'First Name',
+  // },
+ 
+  // {
+  //   id: 'laptop_name',
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: 'Laptop Name',
+  // },
+  // {
+  //   id: 'laptop_sn',
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: 'Laptop S/N',
+  // },
+  // {
+  //   id: 'router_sn',
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: 'Aruba S/N',
+  // },
+  // {
+  //   id: 'aruba_name',
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: 'Aruba Name',
+  // },
+  // {
+  //   id: 'cert_exp',
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: 'Cert Exp',
+  // },
+  {
+    id: 'hand_receipt',
+    numeric: false,
+    disablePadding: false,
+    label: 'Hand Receipt'
   }
-
 ];
 
 function EnhancedTableHead(props) {
@@ -207,8 +196,6 @@ export default function UserView(inventory) {
     getEditedData();
   }, [editShow])
 
-  console.log('FIRST USE EFFECT ', editedData)
-
   const rows = inventory.data;
 
   const handleRequestSort = (event, property) => {
@@ -276,19 +263,19 @@ export default function UserView(inventory) {
                         tabIndex={-1}
                         key={row.id}
                       >
-                        <TableCell >{index + 1}</TableCell>
-
-                        <TableCell align="left">{row.last_name}</TableCell>
-                        <TableCell align="left">{row.first_name}</TableCell>
+                        <TableCell >{""}</TableCell>
                         <TableCell align="left">{row.directorate}</TableCell>
-                        {/* <TableCell align="left">{row.position}</TableCell> */}
-                        <TableCell align="left">{row.laptop_name}</TableCell>
+                        <TableCell align="left">{row.position}</TableCell>
+                        <TableCell align="left">{row.boi === true ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">{row.last_name + ', ' + row.first_name}</TableCell>
+                        {/* <TableCell align="left">{row.first_name}</TableCell> */}
+                        {/* <TableCell align="left">{row.laptop_name}</TableCell>
                         <TableCell align="left">{row.laptop_sn}</TableCell>
                         <TableCell align="left">{row.router_sn}</TableCell>
-                        <TableCell align='left'>{row.aruba_name}</TableCell>
-                        <TableCell align='left'>{row.cert_exp}</TableCell>
+                        <TableCell align='left'>{row.aruba_name}</TableCell> */}
+                        {/* <TableCell align='left'>{row.cert_exp}</TableCell> */}
                         <TableCell align='left'>{row.hand_receipt === null ? "" : <a target='_blank' href={`http://localhost:8080/uploads/${row.hand_receipt}`}>2062</a>}</TableCell>
-                        <TableCell align="left">{row.boi === true ? 'Yes' : 'No'}</TableCell>
+                        
                         <TableCell></TableCell>
                       </TableRow>
                     );

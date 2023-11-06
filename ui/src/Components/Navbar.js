@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { styled, alpha } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
@@ -16,7 +16,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import Button from "@mui/material/Button";
 import axios from "axios";
+import BOI from '../static/2062_fillable.pdf'
 import SearchResults from "./SearchResults";
+import UserContext from "./UserContext";
 
 
 const Search = styled("div")(({ theme }) => ({
@@ -59,12 +61,16 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function Navbar() {
+export default function Navbar(props) {
   const [searchData, setSearchData] = useState([]);
   const [searchQuery, setSearchQuery] = useState();
   const [loginShow, setLoginShow] = useState(false);
   const [matches, setMatches] = useState({});
+  const [adminData, setAdminData] = useState([]);
   let navigate = useNavigate();
+
+  const { isAdmin } = useContext(UserContext);
+  const { handleIsAdmin } = useContext(UserContext);
 
   useEffect(() => {
     const getSearchData = async () => {
@@ -72,7 +78,14 @@ export default function Navbar() {
       const data = await response.data;
       setSearchData(data);
     };
+
+    const getAdminData = async () => {
+      const response = await axios.get(`http://localhost:8080/admins`);
+      const data = await response.data;
+      setAdminData(data);
+    }
     getSearchData();
+    getAdminData();
   }, []);
 
   // HANDLE OPENING LOGIN MODAL
@@ -80,8 +93,19 @@ export default function Navbar() {
     setLoginShow(!loginShow);
   };
 
-  const handleLoginSubmit = () => {
-    window.alert('LOGIN')
+  const handleLoginSubmit = (e) => {
+    let username = e.target.form[0].value;
+    let password = e.target.form[2].value;
+
+    for(let el of adminData) {
+      
+      if(username === el.username && password === el.password){
+        handleIsAdmin();  
+      } else {
+        console.log('unsuccessful')
+      }
+    }
+    setLoginShow(false)
   }
 
   const handleSearchSubmit = (e) => {
@@ -126,7 +150,8 @@ export default function Navbar() {
               sx={{ display: { xs: "none", sm: "block" }, fontSize: 30 }}
             >
               <Link
-                to="/inventory"
+                to="/"
+                params={{isAdmin: isAdmin}}
                 style={{ textDecoration: "none", color: "white" }}
               >
                 CSfC Inventory Tracker
@@ -144,7 +169,6 @@ export default function Navbar() {
                 onChange={(e) => handleSearchSubmit(e)}
               />
             </Search>
-
             <Button
               variant="contained"
               style={{ color: "white" }}
@@ -156,6 +180,15 @@ export default function Navbar() {
               {" "}
               Submit{" "}
             </Button>
+
+            <Typography 
+              variant="h6"
+              noWrap
+              component="div"
+              sx={{ display: { xs: "none", sm: "block" }, fontSize: 30, marginLeft: '5em' }}>
+                <Link to={BOI} target="_blank" style={{ textDecoration: "none", color: "white" }}>Approved BOI</Link>
+
+            </Typography>
 
             <Box sx={{ flexGrow: 1 }} />
             <IconButton
@@ -234,7 +267,7 @@ export default function Navbar() {
                 variant="contained"
                 color="success"
                 margin={2}
-                onClick={() => handleLoginSubmit()}
+                onClick={(e) => handleLoginSubmit(e)}
               >
                 Submit
               </Button>

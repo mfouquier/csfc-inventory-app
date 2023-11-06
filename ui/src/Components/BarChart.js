@@ -28,7 +28,7 @@ const Chart = styled.div`
     margin-left: 5rem;
 `
 
-const labels = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J8', 'CMDT', 'CG'];
+const labels = ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J8', 'CMDT', 'CG', 'POTFF', 'JOG-C'];
 
 
 const BarChart = (dataSet) => {
@@ -42,6 +42,8 @@ const BarChart = (dataSet) => {
   const j8 = [];
   const cmdt = [];
   const cg = [];
+  const potff = [];
+  const jogc = [];
 
   for (let element in dataSet.data) {
     let directorate = {
@@ -57,6 +59,8 @@ const BarChart = (dataSet) => {
     else if (directorate.directorate === 'J8') j8.push(directorate);
     else if (directorate.directorate === 'CMDT') cmdt.push(directorate);
     else if (directorate.directorate === 'CG') cg.push(directorate);
+    else if (directorate.directorate === 'POTFF') potff.push(directorate);
+    else if (directorate.directorate === 'JOG-C') jogc.push(directorate);
     else directorateData.push(directorate)
   }
 
@@ -96,6 +100,14 @@ const BarChart = (dataSet) => {
     return acc[curr.boi] ? ++acc[curr.boi] : acc[curr.boi] = 1, acc
   }, {})
 
+  const potffCount = potff.reduce((acc, curr) => {
+    return acc[curr.boi] ? ++acc[curr.boi] : acc[curr.boi] = 1, acc
+  }, {})
+
+  const jogcCount = jogc.reduce((acc, curr) => {
+    return acc[curr.boi] ? ++acc[curr.boi] : acc[curr.boi] = 1, acc
+  }, {})
+
 
 
   return (
@@ -106,14 +118,14 @@ const BarChart = (dataSet) => {
           datasets: [
             {
               label: 'BOI Kit',
-              data: [j1Count.true, j2Count.true, j3Count.true, j4Count.true, j5Count.true, j6Count.true, j8Count.true, cmdtCount.true, cgCount.true],
+              data: [j1Count.true, j2Count.true, j3Count.true, j4Count.true, j5Count.true, j6Count.true, j8Count.true, cmdtCount.true, cgCount.true, potffCount.true, jogcCount.true],
               borderColor: 'rgb(255, 99, 132)',
               hoverBackgroundColor: '#e63946',
               backgroundColor: 'rgba(255, 99, 132, 0.5)',
             },
             {
               label: 'Non-BOI Kit',
-              data: [j1Count.false, j2Count.false, j3Count.false, j4Count.false, j5Count.false, j6Count.false, j8Count.false, cmdtCount.false, cgCount.false],
+              data: [j1Count.false, j2Count.false, j3Count.false, j4Count.false, j5Count.false, j6Count.false, j8Count.false, cmdtCount.false, cgCount.false, potffCount.false, jogcCount.false],
               borderColor: 'rgb(53, 162, 235)',
               hoverBackgroundColor: '#1d3557',
               backgroundColor: 'rgba(53, 162, 235, 0.5)',

@@ -61,28 +61,28 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: 'last_name',
-    numeric: false,
-    disablePadding: false,
-    label: 'Last Name',
-  },
-  {
-    id: 'first_name',
-    numeric: false,
-    disablePadding: true,
-    label: 'First Name',
-  },
-  {
     id: 'directorate',
     numeric: false,
     disablePadding: false,
     label: 'Directorate',
   },
+   {
+    id: 'position',
+    numeric: false,
+    disablePadding: false,
+    label: 'Position',
+  },
+  {
+    id: 'last_name',
+    numeric: false,
+    disablePadding: false,
+    label: 'Name',
+  },
   // {
-  //   id: 'position',
+  //   id: 'first_name',
   //   numeric: false,
-  //   disablePadding: false,
-  //   label: 'Position',
+  //   disablePadding: true,
+  //   label: 'First Name',
   // },
   {
     id: 'laptop_name',
@@ -90,12 +90,12 @@ const headCells = [
     disablePadding: false,
     label: 'Laptop Name',
   },
-  {
-    id: 'laptop_sn',
-    numeric: false,
-    disablePadding: false,
-    label: 'Laptop S/N',
-  },
+  // {
+  //   id: 'laptop_sn',
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: 'Laptop S/N',
+  // },
   {
     id: 'router_sn',
     numeric: false,
@@ -180,7 +180,7 @@ EnhancedTableHead.propTypes = {
 };
 
 //*********** INVENTORY TABLE DATA ****************/
-export default function InventoryTable(inventory, change) {
+export default function InventoryTable(inventory) {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('calories');
   const [selected, setSelected] = React.useState([]);
@@ -279,26 +279,27 @@ export default function InventoryTable(inventory, change) {
     newUserData.append('boi', selectedEdit.boi);
     newUserData.append('hand_receipt', file)
 
-    console.log(newUserData)
-
     await axios.patch(`http://localhost:8080/inventory/${selectedEdit.id}`, newUserData);
+    inventory.change();
     setEditShow(false);
-    inventory.change()
+
   }
  
   // MAKE CHANGES TO EDITED OBJECT AND SAVE TO OBJECT
   const handleEditFormData = (event, value) => {
     const newData = { ...selectedEdit };
     newData[event.target.id] = event.target.value
+    newData[event.target.name] = event.target.value
     setSelectedEdit(newData)
   }
   // SAVE FORM DATA TO THE FORMDATA USESTATE OBJECT
   const handleFormData = (event) => {
-
     if (event.target.id === "") {
       event.target.id = 'boi'
     }
-
+    if (event.target.id === undefined){
+      event.target.id = 'directorate'
+    }
     let newData = { ...formData };
     newData[event.target.id] = event.target.value;
     setFormData(newData);
@@ -312,10 +313,9 @@ export default function InventoryTable(inventory, change) {
   // SUBMIT FORM DATA TO DATABASE
   const handleSubmit = (event) => {
     const form = event.currentTarget;
-    console.log("validity", form.checkValidity());
-
     let newData = { ...formData };
     newData[event.target.id] = event.target.value;
+    newData[event.target.name] = event.target.value
     setFormData(newData);
     
     const newUserData = new FormData();
@@ -333,9 +333,9 @@ export default function InventoryTable(inventory, change) {
    
 
     axios.post("http://localhost:8080/inventory", newUserData).then((response) => {
-      console.log('Entry added successfully', response)
     });
     setOpen(false);
+    setFormData({})
     inventory.change()
   }
 
@@ -395,13 +395,11 @@ export default function InventoryTable(inventory, change) {
                         key={row.id}
                       >
                         <TableCell ><EditIcon onClick={() => handleEditShow(row)} /></TableCell>
-
-                        <TableCell align="left">{row.last_name}</TableCell>
-                        <TableCell align="left">{row.first_name}</TableCell>
                         <TableCell align="left">{row.directorate}</TableCell>
-                        {/* <TableCell align="left">{row.position}</TableCell> */}
+                        <TableCell align="left">{row.position}</TableCell>
+                        <TableCell align="left">{row.last_name + ', ' + row.first_name}</TableCell>
                         <TableCell align="left">{row.laptop_name}</TableCell>
-                        <TableCell align="left">{row.laptop_sn}</TableCell>
+                        {/* <TableCell align="left">{row.laptop_sn}</TableCell> */}
                         <TableCell align="left">{row.router_sn}</TableCell>
                         <TableCell align='left'>{row.aruba_name}</TableCell>
                         <TableCell align='left'>{row.cert_exp}</TableCell>
@@ -490,13 +488,19 @@ export default function InventoryTable(inventory, change) {
 
               <FormControl required>
                 <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
-                <OutlinedInput
-                  id="directorate"
-                  label="directorate"
-                  type='text'
-                  value={formData.directorate}
-                  onChange={(e) => handleFormData(e)}
-                />
+                <Select label='directorate' name='directorate' type='text' defaultValue={formData.directorate} onChange={(e) => handleFormData(e)}>
+                  <MenuItem value={'J1'} id='directorate' >J1</MenuItem>
+                  <MenuItem value={'J2'} id='directorate'>J2</MenuItem>
+                  <MenuItem value={'J3'} id='directorate'>J3</MenuItem>
+                  <MenuItem value={'J4'} id='directorate'>J4</MenuItem>
+                  <MenuItem value={'J5'} id='directorate'>J5</MenuItem>
+                  <MenuItem value={'J6'} id='directorate'>J6</MenuItem>
+                  <MenuItem value={'J8'} id='directorate'>J8</MenuItem>
+                  <MenuItem value={'CG'} id='directorate'>CG</MenuItem>
+                  <MenuItem value={'CMDT'} id='directorate'>CMDT</MenuItem>
+                  <MenuItem value={'POTFF'} id='directorate'>POTFF</MenuItem>
+                  <MenuItem value={'JOG-C'} id='directorate'>JOG-C</MenuItem>
+                </Select>
               </FormControl>
 
               <FormControl required>
@@ -685,13 +689,19 @@ export default function InventoryTable(inventory, change) {
               </FormControl>
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Directorate</InputLabel>
-                <OutlinedInput
-                  id="directorate"
-                  label="directorate"
-                  type='text'
-                  defaultValue={selectedEdit.directorate}
-                  onChange={(e) => handleEditFormData(e)}
-                />
+                <Select id='directorate' label='directorate' name='directorate' type='text' defaultValue={selectedEdit.directorate} onChange={(e) => handleEditFormData(e)}>
+                  <MenuItem value={'J1'} id='directorate' >J1</MenuItem>
+                  <MenuItem value={'J2'} id='directorate'>J2</MenuItem>
+                  <MenuItem value={'J3'} id='directorate'>J3</MenuItem>
+                  <MenuItem value={'J4'} id='directorate'>J4</MenuItem>
+                  <MenuItem value={'J5'} id='directorate'>J5</MenuItem>
+                  <MenuItem value={'J6'} id='directorate'>J6</MenuItem>
+                  <MenuItem value={'J8'} id='directorate'>J8</MenuItem>
+                  <MenuItem value={'CG'} id='directorate'>CG</MenuItem>
+                  <MenuItem value={'CMDT'} id='directorate'>CMDT</MenuItem>
+                  <MenuItem value={'POTFF'} id='directorate'>POTFF</MenuItem>
+                  <MenuItem value={'JOG-C'} id='directorate'>JOG-C</MenuItem>
+                </Select>
               </FormControl>
               <FormControl>
                 <InputLabel htmlFor="component-outlined">Position</InputLabel>
